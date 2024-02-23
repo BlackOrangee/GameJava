@@ -12,4 +12,5 @@ module com.fx.gamejava {
 
     opens com.fx.gamejava to javafx.fxml;
     exports com.fx.gamejava;
+    opens assets.textures;
 }
