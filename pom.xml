@@ -106,6 +106,13 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/br.com.objectos/core-map -->
+        <dependency>
+            <groupId>br.com.objectos</groupId>
+            <artifactId>core-map</artifactId>
+            <version>0.7.0-jdk17</version>
+        </dependency>
+
     </dependencies>
 
     <build>
