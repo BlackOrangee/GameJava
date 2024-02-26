@@ -2,6 +2,7 @@ package com.fx.gamejava;
 
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
+import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.components.CollidableComponent;
@@ -11,6 +12,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import javafx.util.Duration;
+
 import java.util.Map;
 
 import static com.almasb.fxgl.dsl.FXGL.*;
@@ -20,7 +23,7 @@ public class GameApp  extends GameApplication {
     @Override
     protected void initSettings(GameSettings settings) {
         settings.setWidth(600);
-        settings.setHeight(600);
+        settings.setHeight(800);
         settings.setTitle("Basic Game App");
         settings.setVersion("0.1");
     }
@@ -28,82 +31,111 @@ public class GameApp  extends GameApplication {
     @Override
     protected void initInput() {
         onKey(KeyCode.D, () -> {
-            player.translateX(5); // move right 5 pixels
-            inc("pixelsMoved", +5);
+            player.translateX(5);
+//            inc("pixelsMoved", +5);
         });
 
         onKey(KeyCode.A, () -> {
-            player.translateX(-5); // move left 5 pixels
-            inc("pixelsMoved", +5);
+            player.translateX(-5);
+//            inc("pixelsMoved", +5);
         });
 
         onKey(KeyCode.W, () -> {
-            player.translateY(-5); // move up 5 pixels
-            inc("pixelsMoved", +5);
+            player.translateY(-5);
+//            inc("pixelsMoved", +5);
         });
 
         onKey(KeyCode.S, () -> {
-            player.translateY(5); // move down 5 pixels
-            inc("pixelsMoved", +5);
+            player.translateY(5);
+//            inc("pixelsMoved", +5);
         });
     }
 
     @Override
     protected void initGameVars(Map<String, Object> vars) {
-        vars.put("pixelsMoved", 0);
+        vars.put("COINS", 0);
+        vars.put("HEALTH", 3);
     }
 
     private Entity player;
+
+    public Entity brick;
 
     @Override
     protected void initGame() {
         player = entityBuilder()
                 .type(EntityType.PLAYER)
-                .at(300, 300)
+                .at(getWindowService().getPrefWidth() / 2, 700)
                 .viewWithBBox("ball.png")
                 .with(new CollidableComponent(true))
                 .buildAndAttach();
 
-        FXGL.entityBuilder()
-                .type(EntityType.COIN)
-                .at(500, 200)
-                .viewWithBBox(new Circle(15, 15, 15, Color.YELLOW))
-                .with(new CollidableComponent(true))
-                .buildAndAttach();
+       run(() -> getGameWorld().addEntity(
+               FXGLMath.random(0, 100) > 30
+                       ? EntityFactory.createBrick()
+                       : EntityFactory.createCoin()),
+               Duration.seconds(0.3));
     }
 
     @Override
     protected void initUI() {
+        Circle circle = new Circle(15, 15, 15, Color.YELLOW);
+        circle.setTranslateX(20);
+        circle.setTranslateY(20);
+        getGameScene().addUINode(circle);
+
         Text textPixels = new Text();
-        textPixels.setTranslateX(50); // x = 50
-        textPixels.setTranslateY(100); // y = 100
+        textPixels.setTranslateX(30);
+        textPixels.setTranslateY(39);
 
-        textPixels.textProperty().bind(getWorldProperties().intProperty("pixelsMoved").asString());
+        textPixels.textProperty().bind(getWorldProperties().intProperty("COINS").asString());
 
-        getGameScene().addUINode(textPixels); // add to the scene graph
+        getGameScene().addUINode(textPixels);
 
-//        var brickTexture = getAssetLoader().loadTexture("brick.png");
-//        brickTexture.setTranslateX(50);
-//        brickTexture.setTranslateY(450);
-//
-//        getGameScene().addUINode(brickTexture); // add to the scene graph
+        var heart = getAssetLoader().loadTexture("heart.png");
+        heart.setTranslateX(550);
+        heart.setTranslateY(20);
+        getGameScene().addUINode(heart);
+
+
+
     }
 
     public enum EntityType {
-        PLAYER, COIN
+        PLAYER, COIN, BRICK
     }
 
     @Override
     protected void initPhysics() {
         FXGL.getPhysicsWorld().addCollisionHandler(new CollisionHandler(EntityType.PLAYER, EntityType.COIN) {
 
-            // order of types is the same as passed into the constructor
             @Override
             protected void onCollisionBegin(Entity player, Entity coin) {
                 coin.removeFromWorld();
+                inc("COINS", +1);
+            }
+        });
+
+        FXGL.getPhysicsWorld().addCollisionHandler(new CollisionHandler(EntityType.PLAYER, EntityType.BRICK) {
+            @Override
+            protected void onCollisionBegin(Entity player, Entity brick) {
+                inc("HEALTH", -1);
+                brick.removeFromWorld();
             }
         });
     }
+
+    @Override
+    protected void onUpdate(double tpf){
+        getGameWorld().getEntitiesByType(EntityType.BRICK).forEach(brick -> brick.translateY(350 * tpf));
+        getGameWorld().getEntitiesByType(EntityType.COIN).forEach(coin -> coin.translateY(350 * tpf));
+//        onIntChange("HEALTH")
+    }
+    public void updateHealth(){
+
+    }
+
+
     public static void main(String[] args) {
         launch(args);
     }
