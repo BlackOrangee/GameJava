@@ -17,6 +17,7 @@ public class EntityFactory {
                 .at(FXGLMath.random(0, getAppWidth() - 64), 0)
                 .viewWithBBox("brick.png")
                 .with(new CollidableComponent(true))
+                .zIndex(1)
                 .build();
     }
 
@@ -24,8 +25,29 @@ public class EntityFactory {
         return FXGL.entityBuilder()
                 .type(GameApp.EntityType.COIN)
                 .at(FXGLMath.random(0, getAppWidth() - 15), 0)
-                .viewWithBBox(new Circle(15, 15, 15, Color.YELLOW))
+                .viewWithBBox("coin.png")
                 .with(new CollidableComponent(true))
+                .zIndex(1)
+                .build();
+    }
+
+    public static Entity createBackground() {
+        return FXGL.entityBuilder()
+                .type(GameApp.EntityType.BACKGROUND)
+                .at(0, 0)
+                .viewWithBBox("background.png")
+                .with(new CollidableComponent(true))
+                .zIndex(0)
+                .build();
+    }
+
+    public static Entity createBlur() {
+        return FXGL.entityBuilder()
+                .type(GameApp.EntityType.BLUR)
+                .at(0, 0)
+                .viewWithBBox("blur.png")
+                .with(new CollidableComponent(true))
+                .zIndex(2)
                 .build();
     }
 }
